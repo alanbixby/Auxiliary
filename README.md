@@ -1,26 +1,8 @@
-<h1 align="center">
-  <img src="https://cdn.discordapp.com/attachments/608941689872056333/699568537919815690/unknown.png">
-  <br>
-</h1>
-
-<p align="center">
-    <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-blue.svg?style=flat-square" alt="JavaScript Style Guide"/></a>
-</p>
-
 <h1>This project is no longer maintained</h1>
-<hr>
+
+---
+
 ### About
-Finally, a service that doesn't charge its users for something so essential and simple.
+A slightly updated fork of the Auxillary module as a favor to someone asking in the `noblox.js` Discord server; my changes are completely untested, and I have never even used this bot before; the source code is WET and fails to use ES6 syntax- it is a non-maintained library for a reason.
 
-Auxiliary is an open-sourced Discord-ROBLOX integration bot which allows users to manage their clans through their Discord guild.
-This service is similar to a paid one; however, this service doesn't charge people and it's completely open-sourced meaning
-users can host this service by themselves--for free.
-
-### Installation
-[The installation guide can be viewed at this link](https://github.com/nishi7409/Auxiliary/wiki)
-
-
-### License
-```sh
-MIT
-```
+I highly recommend using a paid service such as Clan Labs, instead of trying to trove through this mess- albeit if you must, this'll at least give you a head start. As aforementioned **my changes are untested**, so expect some casing errors in variable references, or overzealous removals of `data` wrappers from the transition of old `axios` web requests to `noblox.js` requests.

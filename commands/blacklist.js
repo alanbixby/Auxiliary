@@ -17,12 +17,11 @@ exports.run = async (client, message, args, groupID) => {
             for (var key in response.data){
                 if (response.data.hasOwnProperty(key)) {
 					// user_id, blacklist description, discordId
-					await axios.get(`https://api.roblox.com/users/`+key)
-					.then(function (usernameResponse) {
-						if (response.data.errors == null) {
-							blacklistEmbed.addField(usernameResponse.data.Username + " ("+ usernameResponse.data.Id + ")", "Reason: " + response.data[key].description)
-						}
-					});
+					await rblxFunctions.getPlayerInfo(key)
+						.then(function (usernameResponse) {
+							blacklistEmbed.addField(usernameResponse.username + " ("+ key + ")", "Reason: " + response.data[key].description)
+						})
+						.catch((err) => { console.log(err) })
                 }
 			}
 			return message.channel.send(blacklistEmbed)
@@ -48,22 +47,11 @@ exports.run = async (client, message, args, groupID) => {
 				}	
 			}
 
-			var rblx_username
-			var rblx_id
-
+			
 			var flag = true
 
-			await axios.get(`https://api.roblox.com/users/get-by-username?username=${args[2]}`)
-			.then(function (response) {
-				// wow user doesn't exist
-				if (response.data.success == false){
-					flag = false;
-				} else {
-					// user does exist
-					rblx_username = response.data.Username;
-					rblx_id = response.data.Id;
-				}
-			})
+			var rblx_username = args[2];
+			var rblx_id = await rblxFunctions.getIdFromUsername(args[2]).catch(() => flag = false)
 
 			if (flag == false){
 				var badEmbed = new Discord.MessageEmbed()
@@ -86,22 +74,10 @@ exports.run = async (client, message, args, groupID) => {
 				return message.channel.send(`Please provide a username for your second argument!`)
 			}
 
-			var rblx_username
-			var rblx_id
-
 			var flag = true
 
-			await axios.get(`https://api.roblox.com/users/get-by-username?username=${args[2]}`)
-			.then(function (response) {
-				// wow user doesn't exist
-				if (response.data.success == false){
-					flag = false;
-				} else {
-					// user does exist
-					rblx_username = response.data.Username;
-					rblx_id = response.data.Id;
-				}
-			})
+			var rblx_username = args[2]
+			var rblx_id = await rblxFunctions.getIdFromUsername(args[2]).catch(() => flag = false)
 
 			if (flag == false){
 				var badEmbed = new Discord.MessageEmbed()

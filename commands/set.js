@@ -79,30 +79,15 @@ exports.run = async (client, message, args, groupID) => {
 
 
 	// all roles
-	var roles;
-	await axios.get(`https://api.roblox.com/groups/${groupID}`)
-		.then(function (response) {
-			roles = response.data.Roles;
-		});
+	var roles = await rblxFunctions.getRoles(groupID);
 
 	// for loop to go through array
 	for (i = 0; i < userArray.length; i++){
 		// username & id & boolean to get out
-		var rblx_username = userArray[i].trim();
-		var rblx_id;
 		var flag = false;
-			// grab id if possible
-		await axios.get(`https://api.roblox.com/users/get-by-username?username=${rblx_username}`)
-			.then(function (response) {
-				// wow user doesn't exist
-				if (response.data.success == false){
-					flag = true;
-				}else{
-					// user does exist
-					rblx_username = response.data.Username;
-					rblx_id = response.data.Id;
-				}
-			})
+
+		var rblx_username = userArray[i].trim();
+		var rblx_id = await rblxFunctions.getIdFromUsername("rblx_username").catch(() => { flag = true; });
 
 		// error message
 		if (flag){
@@ -161,13 +146,13 @@ exports.run = async (client, message, args, groupID) => {
 			var current_rolesetID;
 
 			// fetch data
-			await axios.get(`https://api.roblox.com/users/${rblx_id}/groups`)
+			await rblxFunctions.getGroups(rblx_id)
 				.then(function (response) {
 					var flag = false;
-					for (new_i = 0; new_i < response.data.length; new_i++) {
-						if (response.data[new_i].Id == groupID) {
+					for (var group of response) {
+						if (group.Id == groupID) {
 							flag = true;
-							current_rolesetID = response.data[new_i].Rank;
+							current_rolesetID = group.Rank;
 							break;
 						}
 					}
@@ -176,16 +161,16 @@ exports.run = async (client, message, args, groupID) => {
 						current_rolesetID = 0;
 					}
 				});
-
+				.catch((err) => { console.log(err) })
 
 			// next roleset id
 			var next_rolesetID = 0;
 			var next_rolesetName;
 
 			for (not_i = 0; not_i < roles.length; not_i++) {
-				if (roles[not_i].Rank == current_rolesetID && current_rolesetID !== 255) {
-					next_rolesetID = roles[not_i + 1].Rank;
-					next_rolesetName = roles[not_i + 1].Name;
+				if (roles[not_i].rank == current_rolesetID && current_rolesetID !== 255) {
+					next_rolesetID = roles[not_i + 1].rank;
+					next_rolesetName = roles[not_i + 1].name;
 					break;
 				} else if (current_rolesetID == 255) {
 					next_rolesetID = -2;
@@ -231,13 +216,13 @@ exports.run = async (client, message, args, groupID) => {
 			var current_rolesetID;
 
 			// fetch data
-			await axios.get(`https://api.roblox.com/users/${rblx_id}/groups`)
+			await rblxFunctions.getGroups(rblx_id)
 				.then(function (response) {
 					var flag = false;
-					for (new_i = 0; new_i < response.data.length; new_i++) {
-						if (response.data[new_i].Id == groupID) {
+					for (var group of response) {
+						if (group.Id == groupID) {
 							flag = true;
-							current_rolesetID = response.data[new_i].Rank;
+							current_rolesetID = group.Rank;
 							break;
 						}
 					}
@@ -245,7 +230,8 @@ exports.run = async (client, message, args, groupID) => {
 					if (flag == false) {
 						current_rolesetID = 0;
 					}
-				});
+				})
+				.catch((err) => { console.log(err) });
 
 
 			// next roleset id
@@ -253,9 +239,9 @@ exports.run = async (client, message, args, groupID) => {
 			var previous_rolesetName;
 
 			for (not_i = 0; not_i < roles.length; not_i++) {
-				if (roles[not_i].Rank == current_rolesetID && current_rolesetID !== 255) {
-					previous_rolesetID = roles[not_i - 1].Rank;
-					previous_rolesetName = roles[not_i - 1].Name;
+				if (roles[not_i].rank == current_rolesetID && current_rolesetID !== 255) {
+					previous_rolesetID = roles[not_i - 1].rank;
+					previous_rolesetName = roles[not_i - 1].name;
 					console.log(previous_rolesetName);
 					break;
 				} else if (current_rolesetID == 255) {

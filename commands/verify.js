@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Discord = require("discord.js");
 const admin = require("firebase-admin");
+const rblxFunctions = require("noblox.js");
 
 exports.run = async (client, message, args) => {
 
@@ -28,22 +29,9 @@ exports.run = async (client, message, args) => {
 
 	// user doesn't exist
 	if (flag == true){
-		var rblx_id = 0;
-		var rblx_username;
+		var rblx_username = args[1];
+		var rblx_id = await rblxFunctions.getIdFromUsername(rblx_username).catch(() => flag = false)
 		const verificationCode = ['apple', 'rain', 'dog', 'cat', 'food','yum','pizza','raindrop','snow','birthday','cake','burger','soda','ice','no','yes','orange','pear','plum'];
-
-		await axios.get(`https://api.roblox.com/users/get-by-username?username=${args[1]}`)
-			.then(function (response) {
-				// wow user doesn't exist
-				if (response.data.success == false){
-					flag = false;
-				}else{
-					// user does exist
-					rblx_username = response.data.Username;
-					rblx_id = response.data.Id;
-				}
-			})
-
 
 		if (!args[1] || flag == false){
 			var badEmbed = new Discord.MessageEmbed()

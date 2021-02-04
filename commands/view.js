@@ -1,5 +1,6 @@
 const axios = require("axios");
 const Discord = require("discord.js");
+const rblxFunctions = require("noblox.js");
 
 // proress bar maker, depends on %
 function progressBar(percentAge) {
@@ -62,27 +63,16 @@ exports.run = async (client, message, args, groupID) => {
            );
       }
     });
-  }else{
+  } else{
     usernameArgument = args[1];
   }
-
-  // variables for username and id
-  var rblx_id, rblx_username;
 
   // boolean to stop this all!!
   var flag = false;
 
-  // fetch data
-  await axios
-    .get(`https://api.roblox.com/users/get-by-username?username=${usernameArgument}`)
-    .then(function (response) {
-      if (response.data.success == false) {
-        flag = true;
-      } else {
-        rblx_username = response.data.Username;
-        rblx_id = response.data.Id;
-      }
-    });
+  // variables for username and id
+  var rblx_username = usernameArgument;
+  var rblx_id = await rblxFunctions.getIdFromUsername(rblx_username).catch(() => flag = true)
 
   // does user exist?
   if (flag) {
@@ -117,16 +107,15 @@ exports.run = async (client, message, args, groupID) => {
       current_xp = 0;
     }
 
-    // fetch data again
-    await axios
-      .get(`https://api.roblox.com/users/${rblx_id}/groups`)
+    // fetch data
+    await rblxFunctions.getGroups(rblx_id)
       .then(function (response) {
         var flag = false;
-        for (i = 0; i < response.data.length; i++) {
-          if (response.data[i].Id == groupID) {
+        for (var group of response) {
+          if (group.Id == groupID) {
             flag = true;
-            rank_name = response.data[i].Role;
-            roleset_id = response.data[i].Rank;
+            rank_name = group.Role;
+            roleset_id = group.Rank;
             break;
           }
         }
@@ -155,12 +144,7 @@ exports.run = async (client, message, args, groupID) => {
     }
 
     // all roles
-    var roles;
-    await axios
-      .get(`https://api.roblox.com/groups/${groupID}`)
-      .then(function (response) {
-        roles = response.data.Roles;
-      });
+    var roles = await rblxFunctions.getRoles(groupID);
 
     // get next role set id and i number
     var next_rolesetID = -1;
@@ -168,8 +152,8 @@ exports.run = async (client, message, args, groupID) => {
 
     // loop through all roles looking for next roleset id
     for (i = 0; i < roles.length; i++) {
-      if (roles[i].Rank == roleset_id && roleset_id !== 255) {
-        next_rolesetID = roles[i + 1].Rank;
+      if (roles[i].rank == roleset_id && roleset_id !== 255) {
+        next_rolesetID = roles[i + 1].rank;
         i_num = i + 1;
         break;
       } else if (roleset_id == 255) {
@@ -199,10 +183,10 @@ exports.run = async (client, message, args, groupID) => {
       }
 
       // rank name found!
-      nextRank_name = roles[i_num].Name;
+      nextRank_name = roles[i_num].name;
     } else if (next_rolesetID == -1) {
       // user is a guest
-      nextRank_name = roles[0].Name;
+      nextRank_name = roles[0].name;
       nextRank_xp = 0;
     } else {
       // user is owner

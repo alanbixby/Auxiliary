@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Discord = require("discord.js");
 const admin = require("firebase-admin");
+const rblxFunctions = require("noblox.js");
 
 exports.run = async (client, message, args) => {
 
@@ -60,14 +61,15 @@ exports.run = async (client, message, args) => {
 		var groupID;
 		var group_name, owner_id, roles;
 		
-		// fetch data
-		await axios.get(`https://api.roblox.com/groups/${args[1]}`)
+		await rblxFunctions.getGroup(args[1])
 			.then(function (response) {
 				groupID = Number(args[1]);
-				group_name = response.data.Name
-				owner_id = response.data.Owner.Id
-				roles = response.data.Roles;
-			});
+				group_name = response.name
+				owner_id = response.owner.userId
+			})
+			.catch((err) => { console.log(err) })
+
+		roles = await rblxFunctions.getRoles(args[1])
 
 		// if still 0 then error
 		if (groupID == 0){
@@ -93,11 +95,11 @@ exports.run = async (client, message, args) => {
 			if (i == 0){
 				var doneEmbed = new Discord.MessageEmbed()
 					.setColor(0x21ff7a)
-					.setDescription(`**:white_check_mark: Rank: ${roles[i].Name} | Required ${client.config.experience_name}: 0 :white_check_mark: **\n\nThe first rank is automatically set to 0 ${client.config.experience_name}`)
+					.setDescription(`**:white_check_mark: Rank: ${roles[i].name} | Required ${client.config.experience_name}: 0 :white_check_mark: **\n\nThe first rank is automatically set to 0 ${client.config.experience_name}`)
 
 				await message.author.send(doneEmbed);
 				numbers.push(-1);
-				rolesetIDs.push(roles[i].Rank);
+				rolesetIDs.push(roles[i].rank);
 				continue;
 			}
 
@@ -105,11 +107,11 @@ exports.run = async (client, message, args) => {
 			if (i == roles.length - 1){
 				var doneEmbed = new Discord.MessageEmbed()
 					.setColor(0x21ff7a)
-					.setDescription(`**:white_check_mark: Rank: ${roles[i].Name} | Required ${client.config.experience_name}: -1 :white_check_mark: **\n\nThe last rank, ${roles[i].Name}, is not reachable via promotions`)
+					.setDescription(`**:white_check_mark: Rank: ${roles[i].name} | Required ${client.config.experience_name}: -1 :white_check_mark: **\n\nThe last rank, ${roles[i].name}, is not reachable via promotions`)
 
 				await message.author.send(doneEmbed);
 				numbers.push(-1);
-				rolesetIDs.push(roles[i].Rank);
+				rolesetIDs.push(roles[i].rank);
 				continue;
 			}
 
@@ -117,7 +119,7 @@ exports.run = async (client, message, args) => {
 			const location = await message.author.send(  {embed: {
 				// color picker - https://leovoel.github.io/embed-visualizer/
 				color: 16747520,
-				description: `How many ${client.config.experience_name} points should be required to achieve the rank of **\`${roles[i].Name}\`** (roleset id: ${roles[i].Rank})?\n\n**If you'd like this rank to not be reachable through ${client.config.experience_name} points, chat \`-1\`**`,
+				description: `How many ${client.config.experience_name} points should be required to achieve the rank of **\`${roles[i].name}\`** (roleset id: ${roles[i].rank})?\n\n**If you'd like this rank to not be reachable through ${client.config.experience_name} points, chat \`-1\`**`,
 			}})
 				.then(msg => msg.channel).catch(() => {
 					return message.channel.send(`Sorry ${message.author}, but I couldn't direct message you!`).then(message => message.delete({timeout: 5000, reason: "delete"}));
@@ -142,7 +144,7 @@ exports.run = async (client, message, args) => {
 				// if it's a number then success!
 				var doneEmbed = new Discord.MessageEmbed()
 					.setColor(0x21ff7a)
-					.setDescription(`**:white_check_mark: Rank: ${roles[i].Name} | Required ${client.config.experience_name}: ${Number(responseArray[0])} :white_check_mark: **`)
+					.setDescription(`**:white_check_mark: Rank: ${roles[i].name} | Required ${client.config.experience_name}: ${Number(responseArray[0])} :white_check_mark: **`)
 
 				// send message to owner
 				await message.author.send(doneEmbed);
@@ -154,7 +156,7 @@ exports.run = async (client, message, args) => {
 
 				// push number
 				numbers.push(responseArray[0]);
-				rolesetIDs.push(roles[i].Rank);
+				rolesetIDs.push(roles[i].rank);
 			}
 		}
 
@@ -178,9 +180,9 @@ exports.run = async (client, message, args) => {
 		// add fields representing roles
 		for (i = 0; i < numbers.length; i++){
 			if (numbers[i] == -1){
-				doneEmbed.addField(`**\`${roles[i].Name}\` - \`(${roles[i].Rank})\`**`, `:lock: Locked :lock:`, true);
+				doneEmbed.addField(`**\`${roles[i].name}\` - \`(${roles[i].rank})\`**`, `:lock: Locked :lock:`, true);
 			}else{
-				doneEmbed.addField(`**\`${roles[i].Name}\` - \`(${roles[i].Rank})\`**`, `**${Number(numbers[i])} ${client.config.experience_name}**`, true);
+				doneEmbed.addField(`**\`${roles[i].name}\` - \`(${roles[i].rank})\`**`, `**${Number(numbers[i])} ${client.config.experience_name}**`, true);
 			}
 		}
 

@@ -3,7 +3,6 @@ const Discord = require("discord.js");
 const Enmap = require("enmap");
 const admin = require("firebase-admin");
 const rblxFunctions = require("noblox.js");
-const cron = require('node-cron');
 const fs = require("fs");
 
 var serviceAccount = require("./settings/serviceAccountKey.json");
@@ -62,15 +61,3 @@ fs.readdir("./commands/", (err, files) => {
 
 // Client login
 client.login(config.bot_token);
-
-// Initiate Cookie Refresh checking
-cron.schedule('* * 1 * *', () => {
-  if (loggedIn == true) {
-    loggedIn = false
-    rblxFunctions.refreshCookie().then(function(newCookie) {
-      config.rblx_cookie = newCookie
-      rblx_login();
-      console.log("Cookie refreshed, validated and relogged in.")
-    })
-  }
-});
